@@ -1,6 +1,8 @@
 class D3TwinsViewer extends HTMLElement {
   constructor() {
     super();
+
+    // Shadow DOM cerrado — imposible inspeccionarlo
     const shadow = this.attachShadow({ mode: "closed" });
 
     this.iframe = document.createElement("iframe");
@@ -12,12 +14,19 @@ class D3TwinsViewer extends HTMLElement {
 
   connectedCallback() {
     const viewerSrc = this.getAttribute("src");
-    if (!viewerSrc) return;
+    if (!viewerSrc) {
+      console.error("No se proporcionó src al <d3-twins-viewer>");
+      return;
+    }
 
-    // Cargar directamente el visor desde load.3dtwins.tech
-    const realURL = viewerSrc.replace("viewer.", "load.");
+    // Sustituir viewer → load de forma automática
+    const finalURL = viewerSrc.replace(
+      /^https?:\/\/viewer\.3dtwins\.tech/,
+      "https://load.3dtwins.tech"
+    );
 
-    this.iframe.src = realURL; // <-- USAR src REAL
+    // Cargar el visor directamente dentro del iframe (sin srcdoc)
+    this.iframe.src = finalURL;
   }
 }
 
