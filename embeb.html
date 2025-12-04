@@ -53,6 +53,32 @@
       scriptEl.src = 'https://viewer.3dtwins.tech/index.html';
       document.head.appendChild(scriptEl);
 
+      // ---------------------------
+      // Protección contra DevTools
+      // ---------------------------
+      const isEmbedded = window.self !== window.top; // true si está en iframe
+      if (!isEmbedded) {
+        let devtoolsOpen = false;
+        const element = new Image();
+        Object.defineProperty(element, 'id', {
+          get: function() {
+            devtoolsOpen = true;
+          }
+        });
+        console.log(element);
+        setInterval(() => {
+          if (devtoolsOpen) {
+            // Vaciar el iframe dentro del Shadow DOM
+            try {
+              const iframe = viewerEl.shadowRoot.querySelector('iframe');
+              if (iframe) iframe.src = 'about:blank';
+            } catch(e) {
+              console.warn('No se pudo vaciar el iframe:', e);
+            }
+          }
+        }, 1000);
+      }
+
     } else {
       document.body.innerHTML = '<p style="color:white; text-align:center;">No se encontró escena.</p>';
     }
