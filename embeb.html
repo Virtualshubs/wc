@@ -29,7 +29,7 @@
       try {
         const params = new URLSearchParams(window.location.search);
         return params.get('t') || '';
-      } catch (e) {
+      } catch(e) {
         console.error('Error leyendo token de la URL:', e);
         return '';
       }
@@ -40,56 +40,72 @@
     if(sceneToken) {
       const viewerSrc = `https://viewer.3dtwins.tech/?t=${encodeURIComponent(sceneToken)}`;
 
-      // Crear WebComponent dinámicamente
+      // Crear el Web Component
       const viewerEl = document.createElement('d3-twins-viewer');
       viewerEl.setAttribute('src', viewerSrc);
       document.body.appendChild(viewerEl);
 
-      // Cargar script del WebComponent
       const scriptEl = document.createElement('script');
       scriptEl.type = 'module';
       scriptEl.src = 'https://viewer.3dtwins.tech/index.html';
       document.head.appendChild(scriptEl);
 
       // ---------------------------
-      // Protección contra DevTools
+      // Protección activa contra DevTools
       // ---------------------------
-      const isEmbedded = window.self !== window.top;
+      const isEmbedded = window.self !== window.top; // si está en iframe
       if (!isEmbedded) {
-        let devtoolsOpen = false;
+        let blocked = false;
 
-        // Detector básico de DevTools
-        const element = new Image();
-        Object.defineProperty(element, 'id', {
-          get: function() { devtoolsOpen = true; }
-        });
-        console.log(element);
-
-        const cleanDOM = () => {
+        // Función para bloquear iframe
+        const blockIframe = () => {
+          if (blocked) return;
           try {
-            // Vaciar iframe dentro del Shadow DOM
             const iframe = viewerEl.shadowRoot.querySelector('iframe');
             if (iframe) iframe.src = 'about:blank';
+            blocked = true;
+          } catch(e) {}
+        };
 
-            // Opcional: limpiar body y head si quieres ocultar scripts dinámicos
-            document.body.innerHTML = '<p style="color:white; text-align:center;">Contenido bloqueado por debug.</p>';
-            document.querySelectorAll('head script').forEach(s => s.remove());
-          } catch(e) {
-            console.warn('Error limpiando DOM:', e);
+        // Detección clásica por tamaño de ventana
+        const detectResize = () => {
+          const threshold = 160; // px típicos de DevTools
+          if ((window.outerWidth - window.innerWidth) > threshold ||
+              (window.outerHeight - window.innerHeight) > threshold) {
+            blockIframe();
           }
         };
 
-        // Comprobar DevTools periódicamente
+        // Detección por getter de objeto
+        const element = new Image();
+        Object.defineProperty(element, 'id', {
+          get: () => blockIframe()
+        });
+        console.log(element);
+
+        // Detección por intervalos
         setInterval(() => {
-          if (devtoolsOpen) cleanDOM();
+          detectResize();
+          console.clear(); // opcional, molesta a usuarios casuales
         }, 500);
 
-        // Detectar apertura repentina vía resize
-        window.addEventListener('resize', () => {
-          if (window.outerWidth - window.innerWidth > 100 || window.outerHeight - window.innerHeight > 100) {
-            devtoolsOpen = true;
+        // Detección por teclas rápidas
+        window.addEventListener('keydown', (e) => {
+          if (e.key === 'F12' ||
+              (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+              (e.metaKey && e.altKey && e.key === 'I')) {
+            blockIframe();
           }
         });
+
+        // Detección por debugger silencioso
+        let lastTime = Date.now();
+        const detectDebugger = () => {
+          const start = Date.now();
+          debugger; // esto se ejecuta muy rápido si DevTools está abierto
+          if (Date.now() - start > 50) blockIframe();
+        };
+        setInterval(detectDebugger, 1000);
       }
 
     } else {
