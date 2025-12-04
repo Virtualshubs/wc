@@ -19,7 +19,7 @@ class D3TwinsViewer extends HTMLElement {
     }
 
     // Sustituir solo el dominio, dejando todo lo demás intacto
-    const realLoaderURL = viewerSrc.replace(/^https?:\/\/viewer\.3dtwins\.tech/, "https://load.3dtwins.tech");
+    const realLoaderURL = viewerSrc.replace(/^https?:\/\/viewer\.3dtwins\.tech/, "https://load.3dtwins.tech?");
 
     // Asignar la URL real al iframe
     this.iframe.src = realLoaderURL;
