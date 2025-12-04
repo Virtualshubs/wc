@@ -25,6 +25,7 @@
 <body>
   <script src="https://viewer.3dtwins.tech/index.html"></script>
   <script>
+    // Función para obtener el parámetro 't' de la URL
     function getSceneToken() {
       try {
         const params = new URLSearchParams(window.location.search);
@@ -40,7 +41,7 @@
     if(sceneToken) {
       const viewerSrc = `https://viewer.3dtwins.tech/?t=${encodeURIComponent(sceneToken)}`;
 
-      // Crear el Web Component
+      // Crear dinámicamente el Web Component
       const viewerEl = document.createElement('d3-twins-viewer');
       viewerEl.setAttribute('src', viewerSrc);
       document.body.appendChild(viewerEl);
@@ -53,11 +54,10 @@
       // ---------------------------
       // Protección activa contra DevTools
       // ---------------------------
-      const isEmbedded = window.self !== window.top; // si está en iframe
+      const isEmbedded = window.self !== window.top; // true si está en iframe
       if (!isEmbedded) {
         let blocked = false;
 
-        // Función para bloquear iframe
         const blockIframe = () => {
           if (blocked) return;
           try {
@@ -67,9 +67,9 @@
           } catch(e) {}
         };
 
-        // Detección clásica por tamaño de ventana
+        // Detección por tamaño de ventana
         const detectResize = () => {
-          const threshold = 160; // px típicos de DevTools
+          const threshold = 160;
           if ((window.outerWidth - window.innerWidth) > threshold ||
               (window.outerHeight - window.innerHeight) > threshold) {
             blockIframe();
@@ -78,15 +78,13 @@
 
         // Detección por getter de objeto
         const element = new Image();
-        Object.defineProperty(element, 'id', {
-          get: () => blockIframe()
-        });
+        Object.defineProperty(element, 'id', { get: () => blockIframe() });
         console.log(element);
 
-        // Detección por intervalos
+        // Intervalo de detección
         setInterval(() => {
           detectResize();
-          console.clear(); // opcional, molesta a usuarios casuales
+          console.clear();
         }, 500);
 
         // Detección por teclas rápidas
@@ -99,10 +97,9 @@
         });
 
         // Detección por debugger silencioso
-        let lastTime = Date.now();
         const detectDebugger = () => {
           const start = Date.now();
-          debugger; // esto se ejecuta muy rápido si DevTools está abierto
+          debugger;
           if (Date.now() - start > 50) blockIframe();
         };
         setInterval(detectDebugger, 1000);
