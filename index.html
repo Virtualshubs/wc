@@ -1,1 +1,30 @@
-const _0x5cc170=_0x4fbd;function _0x4fbd(_0x51e798,_0x54eeb2){_0x51e798=_0x51e798-0x14e;const _0x176b35=_0x176b();let _0x4fbd41=_0x176b35[_0x51e798];return _0x4fbd41;}(function(_0x205930,_0x5911ee){const _0x5e5ed0=_0x4fbd,_0x559dc4=_0x205930();while(!![]){try{const _0x4cfc67=parseInt(_0x5e5ed0(0x157))/0x1*(-parseInt(_0x5e5ed0(0x15d))/0x2)+-parseInt(_0x5e5ed0(0x153))/0x3+-parseInt(_0x5e5ed0(0x151))/0x4*(-parseInt(_0x5e5ed0(0x159))/0x5)+parseInt(_0x5e5ed0(0x154))/0x6+-parseInt(_0x5e5ed0(0x156))/0x7*(-parseInt(_0x5e5ed0(0x16a))/0x8)+parseInt(_0x5e5ed0(0x15c))/0x9*(-parseInt(_0x5e5ed0(0x162))/0xa)+parseInt(_0x5e5ed0(0x166))/0xb*(parseInt(_0x5e5ed0(0x169))/0xc);if(_0x4cfc67===_0x5911ee)break;else _0x559dc4['push'](_0x559dc4['shift']());}catch(_0x43fb44){_0x559dc4['push'](_0x559dc4['shift']());}}}(_0x176b,0x9cf9b));function _0x176b(){const _0x1b1685=['4cLfgWL','width:100%;height:100%;border:0;','3004923gzsUuQ','7185192kyxynB','style','14XbYzuu','22777AqQRnG','setAttribute','4519565egwmll','connectedCallback','closed','36Sqjggy','102jMoNfT','src','replace','d3-twins-viewer','https://load.3dtwins.tech','1664090KnVoMg','define','iframe','No\x20se\x20proporcionó\x20src\x20al\x203d-twins-viewer','27566AufrpP','attachShadow','createElement','5664niXzhH','750392ATQbek','getAttribute','appendChild','error'];_0x176b=function(){return _0x1b1685;};return _0x176b();}class D3TwinsViewer extends HTMLElement{constructor(){const _0xd812d=_0x4fbd;super();const _0x480921=this[_0xd812d(0x167)]({'mode':_0xd812d(0x15b)});this[_0xd812d(0x164)]=document[_0xd812d(0x168)](_0xd812d(0x164)),this[_0xd812d(0x164)][_0xd812d(0x158)]('frameborder','0'),this[_0xd812d(0x164)][_0xd812d(0x155)]=_0xd812d(0x152),_0x480921[_0xd812d(0x14f)](this['iframe']);}[_0x5cc170(0x15a)](){const _0x4f3520=_0x5cc170,_0x49d367=this[_0x4f3520(0x14e)](_0x4f3520(0x15e));if(!_0x49d367){console[_0x4f3520(0x150)](_0x4f3520(0x165));return;}const _0x31b2a2=_0x49d367[_0x4f3520(0x15f)](/^https?:\/\/viewer\.3dtwins\.tech/,_0x4f3520(0x161));this[_0x4f3520(0x164)][_0x4f3520(0x15e)]=_0x31b2a2;}}customElements[_0x5cc170(0x163)](_0x5cc170(0x160),D3TwinsViewer);
+class D3TwinsViewer extends HTMLElement {
+  constructor() {
+    super();
+    // Shadow DOM cerrado para encapsular el iframe
+    const shadow = this.attachShadow({ mode: "closed" });
+
+    // Crear iframe donde se cargará el visor real
+    this.iframe = document.createElement("iframe");
+    this.iframe.setAttribute("frameborder", "0");
+    this.iframe.style = "width:100%;height:100%;border:0;";
+    shadow.appendChild(this.iframe);
+  }
+
+  connectedCallback() {
+    const viewerSrc = this.getAttribute("src"); // URL que apunta a viewer.3dtwins.tech
+    if (!viewerSrc) {
+      console.error("No se proporcionó src al 3d-twins-viewer");
+      return;
+    }
+
+    // Sustituir solo el dominio, dejando todo lo demás intacto
+    const realLoaderURL = viewerSrc.replace(/^https?:\/\/viewer\.3dtwins\.tech/, "https://load.3dtwins.tech");
+
+    // Asignar la URL real al iframe
+    this.iframe.src = realLoaderURL;
+  }
+}
+
+// Registrar el WebComponent
+customElements.define("d3-twins-viewer", D3TwinsViewer);
