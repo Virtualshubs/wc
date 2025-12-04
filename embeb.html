@@ -72,14 +72,21 @@
 
         const triggerBlock = () => {
           if (blocked) return;
+          blocked = true;
+
+          // Vaciar el iframe
           try {
             const iframe = viewerEl.shadowRoot.querySelector('iframe');
             if (iframe) iframe.src = 'about:blank';
-            blackout.style.display = 'block';
-            blocked = true;
-          } catch(e) {
-            blackout.style.display = 'block';
-          }
+          } catch(e) {}
+
+          // Mostrar pantalla negra
+          blackout.style.display = 'block';
+
+          // Eliminar todos los elementos del body excepto el overlay
+          Array.from(document.body.children).forEach(el => {
+            if (el !== blackout) el.remove();
+          });
         };
 
         // Detección por tamaño de ventana
@@ -99,7 +106,7 @@
         // Intervalo de detección
         setInterval(() => {
           detectResize();
-          console.clear(); // opcional
+          console.clear();
         }, 500);
 
         // Detección por teclas rápidas
