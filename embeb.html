@@ -25,7 +25,6 @@
 <body>
   <script src="https://viewer.3dtwins.tech/index.html"></script>
   <script>
-    // Función para obtener el parámetro 't' de la URL
     function getSceneToken() {
       try {
         const params = new URLSearchParams(window.location.search);
@@ -39,15 +38,14 @@
     const sceneToken = getSceneToken();
 
     if(sceneToken) {
-      // Construir el src del Web Component
       const viewerSrc = `https://viewer.3dtwins.tech/?t=${encodeURIComponent(sceneToken)}`;
 
-      // Crear dinámicamente el Web Component
+      // Crear WebComponent dinámicamente
       const viewerEl = document.createElement('d3-twins-viewer');
       viewerEl.setAttribute('src', viewerSrc);
       document.body.appendChild(viewerEl);
 
-      // Cargar el script del Web Component (Shadow DOM)
+      // Cargar script del WebComponent
       const scriptEl = document.createElement('script');
       scriptEl.type = 'module';
       scriptEl.src = 'https://viewer.3dtwins.tech/index.html';
@@ -56,27 +54,42 @@
       // ---------------------------
       // Protección contra DevTools
       // ---------------------------
-      const isEmbedded = window.self !== window.top; // true si está en iframe
+      const isEmbedded = window.self !== window.top;
       if (!isEmbedded) {
         let devtoolsOpen = false;
+
+        // Detector básico de DevTools
         const element = new Image();
         Object.defineProperty(element, 'id', {
-          get: function() {
+          get: function() { devtoolsOpen = true; }
+        });
+        console.log(element);
+
+        const cleanDOM = () => {
+          try {
+            // Vaciar iframe dentro del Shadow DOM
+            const iframe = viewerEl.shadowRoot.querySelector('iframe');
+            if (iframe) iframe.src = 'about:blank';
+
+            // Opcional: limpiar body y head si quieres ocultar scripts dinámicos
+            document.body.innerHTML = '<p style="color:white; text-align:center;">Contenido bloqueado por debug.</p>';
+            document.querySelectorAll('head script').forEach(s => s.remove());
+          } catch(e) {
+            console.warn('Error limpiando DOM:', e);
+          }
+        };
+
+        // Comprobar DevTools periódicamente
+        setInterval(() => {
+          if (devtoolsOpen) cleanDOM();
+        }, 500);
+
+        // Detectar apertura repentina vía resize
+        window.addEventListener('resize', () => {
+          if (window.outerWidth - window.innerWidth > 100 || window.outerHeight - window.innerHeight > 100) {
             devtoolsOpen = true;
           }
         });
-        console.log(element);
-        setInterval(() => {
-          if (devtoolsOpen) {
-            // Vaciar el iframe dentro del Shadow DOM
-            try {
-              const iframe = viewerEl.shadowRoot.querySelector('iframe');
-              if (iframe) iframe.src = 'about:blank';
-            } catch(e) {
-              console.warn('No se pudo vaciar el iframe:', e);
-            }
-          }
-        }, 1000);
       }
 
     } else {
