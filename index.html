@@ -12,10 +12,21 @@ class D3TwinsViewer extends HTMLElement {
   }
 
   connectedCallback() {
-    const viewerSrc = this.getAttribute("src"); // URL que apunta a viewer.3dtwins.tech
+    let viewerSrc = this.getAttribute("src"); // URL que apunta a viewer.3dtwins.tech
     if (!viewerSrc) {
       console.error("No se proporcionó src al d3-twins-viewer");
       return;
+    }
+
+    // ⚠️ Decodificar parámetros alienígenas si vienen codificados
+    try {
+      const urlParts = viewerSrc.split("?");
+      if (urlParts[1]) {
+        urlParts[1] = decodeURIComponent(urlParts[1]);
+        viewerSrc = `${urlParts[0]}?${urlParts[1]}`;
+      }
+    } catch(e) {
+      console.warn("No se pudo decodificar la URL:", e);
     }
 
     // ⚠️ Transformar solo el dominio viewer -> load, dejando intactos los parámetros
@@ -41,6 +52,3 @@ class D3TwinsViewer extends HTMLElement {
 // Registrar el WebComponent
 customElements.define("d3-twins-viewer", D3TwinsViewer);
 
-
-// Registrar el WebComponent
-customElements.define("d3-twins-viewer", D3TwinsViewer);
