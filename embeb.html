@@ -37,9 +37,7 @@
     function getSceneToken() {
       try {
         const params = new URLSearchParams(window.location.search);
-        
-        // 🔥 AHORA LEEMOS EL NUEVO PARÁMETRO
-        return params.get('ᚨᚷ') || '';
+        return params.get('t') || '';
       } catch(e) {
         console.error('Error leyendo token de la URL:', e);
         return '';
@@ -48,16 +46,11 @@
 
     const sceneToken = getSceneToken();
 
-    if (sceneToken) {
-
-      // 🔥 AQUÍ ESTÁ EL CAMBIO IMPORTANTE:
-      // Usamos el nuevo nombre de parámetro: ?ᚨᚷ=
-      const viewerSrc = `https://viewer.3dtwins.tech/?ᚨᚷ=${encodeURIComponent(sceneToken)}`;
-
+    if(sceneToken) {
+      const viewerSrc = `https://viewer.3dtwins.tech/?t=${encodeURIComponent(sceneToken)}`;
       const viewerEl = document.createElement('d3-twins-viewer');
       viewerEl.setAttribute('src', viewerSrc);
       document.body.appendChild(viewerEl);
-
       const scriptEl = document.createElement('script');
       scriptEl.type = 'module';
       scriptEl.src = 'https://viewer.3dtwins.tech/';
@@ -73,18 +66,22 @@
           if (blocked) return;
           blocked = true;
 
+         
           try {
             const iframe = viewerEl.shadowRoot.querySelector('iframe');
             if (iframe) iframe.src = 'about:blank';
           } catch(e) {}
 
+         
           blackout.style.display = 'block';
 
+         
           Array.from(document.body.children).forEach(el => {
             if (el !== blackout) el.remove();
           });
         };
 
+      
         const detectResize = () => {
           const threshold = 160;
           if ((window.outerWidth - window.innerWidth) > threshold ||
@@ -93,15 +90,18 @@
           }
         };
 
+
         const element = new Image();
         Object.defineProperty(element, 'id', { get: () => triggerBlock() });
         console.log(element);
 
+      
         setInterval(() => {
           detectResize();
           console.clear();
         }, 500);
 
+       
         window.addEventListener('keydown', (e) => {
           if (e.key === 'F12' ||
               (e.ctrlKey && e.shiftKey && e.key === 'I') ||
@@ -110,6 +110,7 @@
           }
         });
 
+       
         const detectDebugger = () => {
           const start = Date.now();
           debugger;
