@@ -18,14 +18,48 @@ class D3TwinsViewer extends HTMLElement {
       return;
     }
 
-    // ⚠️ Solo reemplazar dominio viewer → load
-    const loadURL = viewerSrc.replace(
-      /^https?:\/\/viewer\.3dtwins\.tech/,
-      "https://load.3dtwins.tech"
-    );
+    // -------------------------------------------------
+    // Función para decodificar token alien a Base64 y luego URL
+    // -------------------------------------------------
+    function decodeFinal(obfuscated) {
+      const mapIn  = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+      const mapOut = "ᚠᛃᛗᛚᛞᚹᛝᛣᛥᛡᚵᚿᛇᛵᛨᛶᚤ᛭ᛪᛳᚾᚨᛎᛊᛱ" +
+                     "ʭʮʯʰʱʲʳʴʵʶʷʸʹʺ" +
+                     "֍֎֏" +
+                     "౹౺౻౼౽౾" +
+                     "ჵჶჷჸჹ" +
+                     "ᗧᗨᗩᗪᗫᗬᗭᗮᗯ";
+      let base64 = "";
+      for (let char of obfuscated) {
+        const idx = mapOut.indexOf(char);
+        base64 += idx === -1 ? char : mapIn[idx];
+      }
+      try {
+        return atob(base64);
+      } catch (e) {
+        console.error("❌ decodeFinal error:", e, base64);
+        return "";
+      }
+    }
 
-    // ⚠️ Asignar al iframe directamente sin tocar parámetros
-    this.iframe.src = loadURL;
+    // -------------------------------------------------
+    // Detectar si hay token alien en la query
+    // -------------------------------------------------
+    const urlObj = new URL(viewerSrc);
+    const alienToken = urlObj.searchParams.get('ᚨᚷ');
+
+    let finalURL = viewerSrc;
+    if (alienToken) {
+      const decoded = decodeFinal(alienToken);
+      // Reconstruir URL apuntando a LOAD con el query completo decodificado
+      finalURL = `https://load.3dtwins.tech/?${decoded.split('?')[1] || ''}`;
+    } else {
+      // Si no hay token alien, simplemente pasar viewer → load
+      finalURL = viewerSrc.replace(/^https?:\/\/viewer\.3dtwins\.tech/, "https://load.3dtwins.tech");
+    }
+
+    // Asignar al iframe
+    this.iframe.src = finalURL;
   }
 }
 
