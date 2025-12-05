@@ -12,16 +12,16 @@ class D3TwinsViewer extends HTMLElement {
   }
 
   connectedCallback() {
-    const viewerSrc = this.getAttribute("src"); // URL con token raro
+    const viewerSrc = this.getAttribute("src"); // URL que apunta a viewer.3dtwins.tech
     if (!viewerSrc) {
       console.error("No se proporcionó src al 3d-twins-viewer");
       return;
     }
 
-    // ⚠️ Solo reemplaza el host, deja todo lo demás intacto
+    // Transformar viewer -> load para que cargue el visor real
     const loadURL = viewerSrc.replace(/^https?:\/\/viewer\.3dtwins\.tech/, "https://load.3dtwins.tech");
 
-    // ⚠️ Asignar al iframe directamente sin tocar el token
+    // Asignar al iframe directamente
     this.iframe.src = loadURL;
   }
 }
