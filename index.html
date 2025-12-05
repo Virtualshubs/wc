@@ -1,8 +1,7 @@
 class D3TwinsViewer extends HTMLElement {
   constructor() {
     super();
-    
-    const shadow = this.attachShadow({ mode: "closed" });
+    const shadow = this.attachShadow({ mode: "open" }); // open solo para debug, puedes volver a closed
 
     this.iframe = document.createElement("iframe");
     this.iframe.setAttribute("frameborder", "0");
@@ -11,25 +10,11 @@ class D3TwinsViewer extends HTMLElement {
   }
 
   connectedCallback() {
-    let viewerSrc = this.getAttribute("src"); 
-    if (!viewerSrc) {
-      console.error("No se proporcionó src al d3-twins-viewer");
-      return;
-    }
+    let viewerSrc = this.getAttribute("src");
+    if (!viewerSrc) return;
 
-    // 🟣 NORMALIZAR URL (evita problemas con encode doble)
-    try {
-      const urlObj = new URL(viewerSrc);
-      if (urlObj.searchParams.has("ᚨᚷ")) {
-        const token = urlObj.searchParams.get("ᚨᚷ");
-        urlObj.searchParams.set("ᚨᚷ", encodeURIComponent(token)); // reforzamos
-        viewerSrc = urlObj.toString();
-      }
-    } catch(err) {
-      console.warn("No se pudo normalizar el parámetro ᚨᚷ:", err);
-    }
-
-    // 🔥 Mantener todo igual: solo se cambia viewer → load
+    // Mantener intacto el parámetro raro ᚨᚷ
+    // Solo sustituir dominio viewer -> load
     const loadURL = viewerSrc.replace(
       /^https?:\/\/viewer\.3dtwins\.tech/,
       "https://load.3dtwins.tech"
