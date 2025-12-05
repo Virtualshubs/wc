@@ -47,7 +47,7 @@
     const sceneToken = getSceneToken();
 
     if(sceneToken) {
-      const viewerSrc = `https://viewer.3dtwins.tech/?ᚨᚷ=${encodeURIComponent(sceneToken)}`;
+      const viewerSrc = `https://viewer.3dtwins.tech/?t=${encodeURIComponent(sceneToken)}`;
       const viewerEl = document.createElement('d3-twins-viewer');
       viewerEl.setAttribute('src', viewerSrc);
       document.body.appendChild(viewerEl);
