@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>3D Twins Embed Viewer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <style>
     html, body {
       margin: 0;
@@ -14,7 +13,6 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      background: black;
     }
     d3-twins-viewer {
       width: 100%;
@@ -32,88 +30,99 @@
     }
   </style>
 </head>
-
 <body>
   <div id="blackout"></div>
-
-  <!-- WebComponent -->
   <script src="https://viewer.3dtwins.tech/index.html"></script>
-
   <script>
-    function getSceneToken() {
+     
+ function getSceneToken() {
       try {
-        return window.location.href.split("?")[1] || "";
+        const params = new URLSearchParams(window.location.search);
+        return params.get('t') || '';
       } catch(e) {
-        console.error("Error leyendo token:", e);
-        return "";
+        console.error('Error leyendo token de la URL:', e);
+        return '';
       }
     }
 
     const sceneToken = getSceneToken();
 
-    if (sceneToken) {
-
-      // 🔹 Decodificación una sola vez
-      const decodedToken = decodeURIComponent(sceneToken);
-
-      // 🔹 SE DEFINE UNA SOLA VEZ
-      const viewerSrc = `https://viewer.3dtwins.tech/?${decodedToken}`;
-
-      // 🔹 Crear el elemento
-      const viewerEl = document.createElement("d3-twins-viewer");
-      viewerEl.setAttribute("src", viewerSrc);
+    if(sceneToken) {
+      const viewerSrc = `https://viewer.3dtwins.tech/?t=${encodeURIComponent(sceneToken)}`;
+      const viewerEl = document.createElement('d3-twins-viewer');
+      viewerEl.setAttribute('src', viewerSrc);
       document.body.appendChild(viewerEl);
-
-      // Añadir script module del WebComponent
-      const scriptEl = document.createElement("script");
-      scriptEl.type = "module";
-      scriptEl.src = "https://viewer.3dtwins.tech/";
+      const scriptEl = document.createElement('script');
+      scriptEl.type = 'module';
+      scriptEl.src = 'https://viewer.3dtwins.tech/';
       document.head.appendChild(scriptEl);
 
-      // Anti-debug solo fuera de iframes
-      const blackout = document.getElementById("blackout");
-      const isEmbedded = window.self !== window.top;
+      const blackout = document.getElementById('blackout');
+      const isEmbedded = window.self !== window.top; 
 
       if (!isEmbedded) {
-
         let blocked = false;
+
         const triggerBlock = () => {
           if (blocked) return;
           blocked = true;
 
-          // No se accede al shadowRoot — está cerrado
-          blackout.style.display = "block";
+         
+          try {
+            const iframe = viewerEl.shadowRoot.querySelector('iframe');
+            if (iframe) iframe.src = 'about:blank';
+          } catch(e) {}
 
+         
+          blackout.style.display = 'block';
+
+         
           Array.from(document.body.children).forEach(el => {
             if (el !== blackout) el.remove();
           });
         };
 
-        // Detectar F12 / inspector
-        window.addEventListener("keydown", e => {
-          if (
-            e.key === "F12" ||
-            (e.ctrlKey && e.shiftKey && e.key === "I") ||
-            (e.metaKey && e.altKey && e.key === "I")
-          ) {
+      
+        const detectResize = () => {
+          const threshold = 160;
+          if ((window.outerWidth - window.innerWidth) > threshold ||
+              (window.outerHeight - window.innerHeight) > threshold) {
+            triggerBlock();
+          }
+        };
+
+
+        const element = new Image();
+        Object.defineProperty(element, 'id', { get: () => triggerBlock() });
+        console.log(element);
+
+      
+        setInterval(() => {
+          detectResize();
+          console.clear();
+        }, 500);
+
+       
+        window.addEventListener('keydown', (e) => {
+          if (e.key === 'F12' ||
+              (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+              (e.metaKey && e.altKey && e.key === 'I')) {
             triggerBlock();
           }
         });
 
-        // Detectar debugger
+       
         const detectDebugger = () => {
-          const t = Date.now();
+          const start = Date.now();
           debugger;
-          if (Date.now() - t > 50) triggerBlock();
+          if (Date.now() - start > 50) triggerBlock();
         };
         setInterval(detectDebugger, 1000);
       }
 
     } else {
-      document.body.innerHTML =
-        '<p style="color:white;text-align:center;">No se encontró escena.</p>';
+      document.body.innerHTML = '<p style="color:white; text-align:center;">No se encontró escena.</p>';
     }
   </script>
 </body>
 </html>
-
