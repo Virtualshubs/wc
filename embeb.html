@@ -51,8 +51,10 @@
     const sceneToken = getSceneToken();
 
     if(sceneToken) {
-      // ⚠️ Pasar el token tal cual, incluyendo la query completa
-      const viewerSrc = `https://viewer.3dtwins.tech/?${sceneToken}`;
+      // ⚠️ Decodificar token antes de pasarlo al viewer
+      const decodedToken = decodeURIComponent(sceneToken);
+
+      const viewerSrc = `https://viewer.3dtwins.tech/?${decodedToken}`;
 
       const viewerEl = document.createElement('d3-twins-viewer');
       viewerEl.setAttribute('src', viewerSrc);
