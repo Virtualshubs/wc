@@ -36,88 +36,50 @@
   <!-- Script del WebComponent -->
   <script src="https://viewer.3dtwins.tech/index.html"></script>
 
-  <script>
-    function getSceneToken() {
-      try {
-        // ⚠️ Tomar todo lo que está después de la interrogación
-        const query = window.location.href.split("?")[1] || "";
-        return query;
-      } catch(e) {
-        console.error('Error leyendo token de la URL:', e);
-        return '';
-      }
+
+ <script>
+  function decodeFinal(obfuscated) {
+    const mapIn  = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+    const mapOut = "ᚠᛃᛗᛚᛞᚹᛝᛣᛥᛡᚵᚿᛇᛵᛨᛶᚤ᛭ᛪᛳᚾᚨᛎᛊᛱ" +
+                   "ʭʮʯʰʱʲʳʴʵʶʷʸʹʺ" +
+                   "֍֎֏" +
+                   "౹౺౻౼౽౾" +
+                   "ჵჶჷჸჹ" +
+                   "ᗧᗨᗩᗪᗫᗬᗭᗮᗯ";
+
+    let base64 = "";
+    for (let char of obfuscated) {
+      const idx = mapOut.indexOf(char);
+      base64 += idx === -1 ? char : mapIn[idx];
     }
 
-    const sceneToken = getSceneToken();
+    try { return atob(base64); }
+    catch(e) { console.error("decodeFinal error", e); return ""; }
+  }
 
-    if(sceneToken) {
-      // ⚠️ Pasar el token tal cual, incluyendo la query completa
-      const viewerSrc = `https://viewer.3dtwins.tech/?${sceneToken}`;
-
-      const viewerEl = document.createElement('d3-twins-viewer');
-      viewerEl.setAttribute('src', viewerSrc);
-      document.body.appendChild(viewerEl);
-
-      const scriptEl = document.createElement('script');
-      scriptEl.type = 'module';
-      scriptEl.src = 'https://viewer.3dtwins.tech/';
-      document.head.appendChild(scriptEl);
-
-      const blackout = document.getElementById('blackout');
-      const isEmbedded = window.self !== window.top;
-
-      if (!isEmbedded) {
-        let blocked = false;
-
-        const triggerBlock = () => {
-          if (blocked) return;
-          blocked = true;
-          try {
-            const iframe = viewerEl.shadowRoot.querySelector('iframe');
-            if (iframe) iframe.src = 'about:blank';
-          } catch(e) {}
-          blackout.style.display = 'block';
-          Array.from(document.body.children).forEach(el => {
-            if (el !== blackout) el.remove();
-          });
-        };
-
-        const detectResize = () => {
-          const threshold = 160;
-          if ((window.outerWidth - window.innerWidth) > threshold ||
-              (window.outerHeight - window.innerHeight) > threshold) {
-            triggerBlock();
-          }
-        };
-
-        const element = new Image();
-        Object.defineProperty(element, 'id', { get: () => triggerBlock() });
-        console.log(element);
-
-        setInterval(() => {
-          detectResize();
-          console.clear();
-        }, 500);
-
-        window.addEventListener('keydown', (e) => {
-          if (e.key === 'F12' ||
-              (e.ctrlKey && e.shiftKey && e.key === 'I') ||
-              (e.metaKey && e.altKey && e.key === 'I')) {
-            triggerBlock();
-          }
-        });
-
-        const detectDebugger = () => {
-          const start = Date.now();
-          debugger;
-          if (Date.now() - start > 50) triggerBlock();
-        };
-        setInterval(detectDebugger, 1000);
-      }
-
-    } else {
-      document.body.innerHTML = '<p style="color:white; text-align:center;">No se encontró escena.</p>';
+  function getSceneToken() {
+    try {
+      const query = window.location.href.split("?")[1] || "";
+      return query;
+    } catch(e) {
+      console.error('Error leyendo token de la URL:', e);
+      return '';
     }
-  </script>
+  }
+
+  const sceneToken = getSceneToken();
+
+  if(sceneToken) {
+    // ⚠️ Decodificar el token antes de pasarlo al WebComponent
+    const decoded = decodeFinal(decodeURIComponent(sceneToken.split("=")[1] || ""));
+    const viewerSrc = `https://viewer.3dtwins.tech/?ᚨᚷ=${decoded}`;
+
+    const viewerEl = document.createElement('d3-twins-viewer');
+    viewerEl.setAttribute('src', viewerSrc);
+    document.body.appendChild(viewerEl);
+  }
+</script>
+
+
 </body>
 </html>
