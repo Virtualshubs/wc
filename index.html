@@ -14,15 +14,26 @@ class D3TwinsViewer extends HTMLElement {
   connectedCallback() {
     const viewerSrc = this.getAttribute("src"); // URL que apunta a viewer.3dtwins.tech
     if (!viewerSrc) {
-      console.error("No se proporcionó src al 3d-twins-viewer");
+      console.error("No se proporcionó src al d3-twins-viewer");
       return;
     }
 
-    // Transformar viewer -> load para que cargue el visor real
-    const loadURL = viewerSrc.replace(/^https?:\/\/viewer\.3dtwins\.tech/, "https://load.3dtwins.tech");
+    // Transformar viewer -> load, manteniendo parámetros intactos
+    const loadURL = viewerSrc.replace(
+      /^https?:\/\/viewer\.3dtwins\.tech/,
+      "https://load.3dtwins.tech"
+    );
 
-    // Asignar al iframe directamente
-    this.iframe.src = loadURL;
+    // ⚠️ Detectar si la URL contiene caracteres fuera del ASCII estándar
+    const hasUnicode = /[^\x20-\x7E]/.test(loadURL);
+
+    if (hasUnicode) {
+      // Usar srcdoc para preservar Unicode exactamente como está
+      this.iframe.srcdoc = `<script>window.location.href="${loadURL}";</script>`;
+    } else {
+      // Si solo hay ASCII, asignar directamente
+      this.iframe.src = loadURL;
+    }
   }
 }
 
