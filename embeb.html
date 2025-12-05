@@ -34,13 +34,13 @@
   <div id="blackout"></div>
 
   <!-- Script del WebComponent -->
-  <script src="https://viewer.3dtwins.tech/"></script>
+  <script src="https://viewer.3dtwins.tech/index.html"></script>
 
   <script>
-   function getSceneToken() {
+    function getSceneToken() {
       try {
         const params = new URLSearchParams(window.location.search);
-        // ⚠️ Lee solo el token raro
+        // ⚠️ Leer el token alien directamente
         return params.get('ᚨᚷ') || '';
       } catch(e) {
         console.error('Error leyendo token de la URL:', e);
@@ -50,19 +50,24 @@
 
     const sceneToken = getSceneToken();
 
-    if (sceneToken) {
+    if(sceneToken) {
       // ⚠️ Pasar el token tal cual, sin encodeURIComponent
       const viewerSrc = `https://viewer.3dtwins.tech/?ᚨᚷ=${sceneToken}`;
-
       const viewerEl = document.createElement('d3-twins-viewer');
       viewerEl.setAttribute('src', viewerSrc);
       document.body.appendChild(viewerEl);
 
+      const scriptEl = document.createElement('script');
+      scriptEl.type = 'module';
+      scriptEl.src = 'https://viewer.3dtwins.tech/';
+      document.head.appendChild(scriptEl);
+
       const blackout = document.getElementById('blackout');
-      const isEmbedded = window.self !== window.top; 
+      const isEmbedded = window.self !== window.top;
 
       if (!isEmbedded) {
         let blocked = false;
+
         const triggerBlock = () => {
           if (blocked) return;
           blocked = true;
@@ -73,7 +78,6 @@
           } catch(e) {}
 
           blackout.style.display = 'block';
-
           Array.from(document.body.children).forEach(el => {
             if (el !== blackout) el.remove();
           });
@@ -89,6 +93,7 @@
 
         const element = new Image();
         Object.defineProperty(element, 'id', { get: () => triggerBlock() });
+        console.log(element);
 
         setInterval(() => {
           detectResize();
