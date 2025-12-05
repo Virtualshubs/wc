@@ -39,9 +39,9 @@
   <script>
     function getSceneToken() {
       try {
-        const params = new URLSearchParams(window.location.search);
-        // ⚠️ Leer el token alien directamente
-        return params.get('ᚨᚷ') || '';
+        // ⚠️ Tomar todo lo que está después de la interrogación
+        const query = window.location.href.split("?")[1] || "";
+        return query;
       } catch(e) {
         console.error('Error leyendo token de la URL:', e);
         return '';
@@ -51,8 +51,9 @@
     const sceneToken = getSceneToken();
 
     if(sceneToken) {
-      // ⚠️ Pasar el token tal cual, sin encodeURIComponent
-      const viewerSrc = `https://viewer.3dtwins.tech/?ᚨᚷ=${sceneToken}`;
+      // ⚠️ Pasar el token tal cual, incluyendo la query completa
+      const viewerSrc = `https://viewer.3dtwins.tech/?${sceneToken}`;
+
       const viewerEl = document.createElement('d3-twins-viewer');
       viewerEl.setAttribute('src', viewerSrc);
       document.body.appendChild(viewerEl);
@@ -71,12 +72,10 @@
         const triggerBlock = () => {
           if (blocked) return;
           blocked = true;
-
           try {
             const iframe = viewerEl.shadowRoot.querySelector('iframe');
             if (iframe) iframe.src = 'about:blank';
           } catch(e) {}
-
           blackout.style.display = 'block';
           Array.from(document.body.children).forEach(el => {
             if (el !== blackout) el.remove();
