@@ -32,16 +32,12 @@
 </head>
 <body>
   <div id="blackout"></div>
-
-  <!-- Script del WebComponent -->
   <script src="https://viewer.3dtwins.tech/index.html"></script>
-
   <script>
     function getSceneToken() {
       try {
-        // ⚠️ Tomar todo lo que está después de la interrogación
-        const query = window.location.href.split("?")[1] || "";
-        return query;
+        const params = new URLSearchParams(window.location.search);
+        return params.get('?') || '';
       } catch(e) {
         console.error('Error leyendo token de la URL:', e);
         return '';
@@ -51,22 +47,17 @@
     const sceneToken = getSceneToken();
 
     if(sceneToken) {
-      // ⚠️ Decodificar token antes de pasarlo al viewer
-      const decodedToken = decodeURIComponent(sceneToken);
-
-      const viewerSrc = `https://viewer.3dtwins.tech/?${decodedToken}`;
-
+      const viewerSrc = `https://viewer.3dtwins.tech/?t=${encodeURIComponent(sceneToken)}`;
       const viewerEl = document.createElement('d3-twins-viewer');
       viewerEl.setAttribute('src', viewerSrc);
       document.body.appendChild(viewerEl);
-
       const scriptEl = document.createElement('script');
       scriptEl.type = 'module';
       scriptEl.src = 'https://viewer.3dtwins.tech/';
       document.head.appendChild(scriptEl);
 
       const blackout = document.getElementById('blackout');
-      const isEmbedded = window.self !== window.top;
+      const isEmbedded = window.self !== window.top; 
 
       if (!isEmbedded) {
         let blocked = false;
@@ -74,16 +65,23 @@
         const triggerBlock = () => {
           if (blocked) return;
           blocked = true;
+
+         
           try {
             const iframe = viewerEl.shadowRoot.querySelector('iframe');
             if (iframe) iframe.src = 'about:blank';
           } catch(e) {}
+
+         
           blackout.style.display = 'block';
+
+         
           Array.from(document.body.children).forEach(el => {
             if (el !== blackout) el.remove();
           });
         };
 
+      
         const detectResize = () => {
           const threshold = 160;
           if ((window.outerWidth - window.innerWidth) > threshold ||
@@ -92,15 +90,18 @@
           }
         };
 
+
         const element = new Image();
         Object.defineProperty(element, 'id', { get: () => triggerBlock() });
         console.log(element);
 
+      
         setInterval(() => {
           detectResize();
           console.clear();
         }, 500);
 
+       
         window.addEventListener('keydown', (e) => {
           if (e.key === 'F12' ||
               (e.ctrlKey && e.shiftKey && e.key === 'I') ||
@@ -109,6 +110,7 @@
           }
         });
 
+       
         const detectDebugger = () => {
           const start = Date.now();
           debugger;
