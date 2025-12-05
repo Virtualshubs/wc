@@ -33,15 +33,14 @@
 <body>
   <div id="blackout"></div>
 
-  <!-- ⚠️ Mantengo tu script original -->
+  <!-- Script del WebComponent -->
   <script src="https://viewer.3dtwins.tech/"></script>
 
   <script>
     function getSceneToken() {
       try {
         const params = new URLSearchParams(window.location.search);
-
-        // ⚠️ AHORA LEEMOS SOLO EL NUEVO PARÁMETRO RARO
+        // 🔹 Leemos solo el parámetro raro
         return params.get('ᚨᚷ') || '';
       } catch(e) {
         console.error('Error leyendo token de la URL:', e);
@@ -51,10 +50,8 @@
 
     const sceneToken = getSceneToken();
 
-    if (sceneToken) {
-
-      // ⚠️ ESTA ES LA ÚNICA PARTE QUE CAMBIA REALMENTE
-      // PASAMOS EL PARÁMETRO TAL CUAL LO ESPERA load.3dtwins.tech
+    if(sceneToken) {
+      // 🔹 URL para el WebComponent
       const viewerSrc = `https://viewer.3dtwins.tech/?ᚨᚷ=${encodeURIComponent(sceneToken)}`;
 
       const viewerEl = document.createElement('d3-twins-viewer');
