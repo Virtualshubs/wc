@@ -12,43 +12,19 @@ class D3TwinsViewer extends HTMLElement {
   }
 
   connectedCallback() {
-    let viewerSrc = this.getAttribute("src"); // URL que apunta a viewer.3dtwins.tech
+    const viewerSrc = this.getAttribute("src"); // URL que apunta a viewer.3dtwins.tech
     if (!viewerSrc) {
-      console.error("No se proporcionó src al d3-twins-viewer");
+      console.error("No se proporcionó src al 3d-twins-viewer");
       return;
     }
 
-    // ⚠️ Decodificar parámetros alienígenas si vienen codificados
-    try {
-      const urlParts = viewerSrc.split("?");
-      if (urlParts[1]) {
-        urlParts[1] = decodeURIComponent(urlParts[1]);
-        viewerSrc = `${urlParts[0]}?${urlParts[1]}`;
-      }
-    } catch(e) {
-      console.warn("No se pudo decodificar la URL:", e);
-    }
+    // Transformar viewer -> load para que cargue el visor real
+    const loadURL = viewerSrc.replace(/^https?:\/\/viewer\.3dtwins\.tech/, "https://load.3dtwins.tech");
 
-    // ⚠️ Transformar solo el dominio viewer -> load, dejando intactos los parámetros
-    const loadURL = viewerSrc.replace(
-      /^https?:\/\/viewer\.3dtwins\.tech/,
-      "https://load.3dtwins.tech"
-    );
-
-    // ⚠️ Asignar al iframe directamente, sin encodeURIComponent ni cambios en parámetros
+    // Asignar al iframe directamente
     this.iframe.src = loadURL;
-
-    // ⚠️ Opcional: inyectar script del WebComponent si necesitas funcionalidad adicional
-    if (!document.querySelector('script[data-d3-twins]')) {
-      const scriptEl = document.createElement('script');
-      scriptEl.type = 'module';
-      scriptEl.src = 'https://viewer.3dtwins.tech/';
-      scriptEl.setAttribute('data-d3-twins', 'true');
-      document.head.appendChild(scriptEl);
-    }
   }
 }
 
 // Registrar el WebComponent
 customElements.define("d3-twins-viewer", D3TwinsViewer);
-
