@@ -37,10 +37,10 @@
   <script src="https://viewer.3dtwins.tech/"></script>
 
   <script>
-    function getSceneToken() {
+   function getSceneToken() {
       try {
         const params = new URLSearchParams(window.location.search);
-        // 🔹 Leemos solo el parámetro raro
+        // ⚠️ Lee solo el token raro
         return params.get('ᚨᚷ') || '';
       } catch(e) {
         console.error('Error leyendo token de la URL:', e);
@@ -50,26 +50,19 @@
 
     const sceneToken = getSceneToken();
 
-    if(sceneToken) {
-      // 🔹 URL para el WebComponent
-   const viewerSrc = `https://viewer.3dtwins.tech/?ᚨᚷ=${sceneToken}`;
-
+    if (sceneToken) {
+      // ⚠️ Pasar el token tal cual, sin encodeURIComponent
+      const viewerSrc = `https://viewer.3dtwins.tech/?ᚨᚷ=${sceneToken}`;
 
       const viewerEl = document.createElement('d3-twins-viewer');
       viewerEl.setAttribute('src', viewerSrc);
       document.body.appendChild(viewerEl);
-
-      const scriptEl = document.createElement('script');
-      scriptEl.type = 'module';
-      scriptEl.src = 'https://viewer.3dtwins.tech/';
-      document.head.appendChild(scriptEl);
 
       const blackout = document.getElementById('blackout');
       const isEmbedded = window.self !== window.top; 
 
       if (!isEmbedded) {
         let blocked = false;
-
         const triggerBlock = () => {
           if (blocked) return;
           blocked = true;
@@ -96,7 +89,6 @@
 
         const element = new Image();
         Object.defineProperty(element, 'id', { get: () => triggerBlock() });
-        console.log(element);
 
         setInterval(() => {
           detectResize();
