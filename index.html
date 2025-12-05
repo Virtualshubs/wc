@@ -14,54 +14,33 @@ class D3TwinsViewer extends HTMLElement {
   connectedCallback() {
     const viewerSrc = this.getAttribute("src"); // URL que apunta a viewer.3dtwins.tech
     if (!viewerSrc) {
-      console.error("No se proporcionó src al 3d-twins-viewer");
+      console.error("No se proporcionó src al d3-twins-viewer");
       return;
     }
 
-    // -------------------------------------------------
-    // Función para decodificar token alien a Base64 y luego URL
-    // -------------------------------------------------
-    function decodeFinal(obfuscated) {
-      const mapIn  = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-      const mapOut = "ᚠᛃᛗᛚᛞᚹᛝᛣᛥᛡᚵᚿᛇᛵᛨᛶᚤ᛭ᛪᛳᚾᚨᛎᛊᛱ" +
-                     "ʭʮʯʰʱʲʳʴʵʶʷʸʹʺ" +
-                     "֍֎֏" +
-                     "౹౺౻౼౽౾" +
-                     "ჵჶჷჸჹ" +
-                     "ᗧᗨᗩᗪᗫᗬᗭᗮᗯ";
-      let base64 = "";
-      for (let char of obfuscated) {
-        const idx = mapOut.indexOf(char);
-        base64 += idx === -1 ? char : mapIn[idx];
-      }
-      try {
-        return atob(base64);
-      } catch (e) {
-        console.error("❌ decodeFinal error:", e, base64);
-        return "";
-      }
+    // ⚠️ Transformar solo el dominio viewer -> load, dejando intactos los parámetros
+    const loadURL = viewerSrc.replace(
+      /^https?:\/\/viewer\.3dtwins\.tech/,
+      "https://load.3dtwins.tech"
+    );
+
+    // ⚠️ Asignar al iframe directamente, sin encodeURIComponent ni cambios en parámetros
+    this.iframe.src = loadURL;
+
+    // ⚠️ Opcional: inyectar script del WebComponent si necesitas funcionalidad adicional
+    if (!document.querySelector('script[data-d3-twins]')) {
+      const scriptEl = document.createElement('script');
+      scriptEl.type = 'module';
+      scriptEl.src = 'https://viewer.3dtwins.tech/';
+      scriptEl.setAttribute('data-d3-twins', 'true');
+      document.head.appendChild(scriptEl);
     }
-
-    // -------------------------------------------------
-    // Detectar si hay token alien en la query
-    // -------------------------------------------------
-    const urlObj = new URL(viewerSrc);
-    const alienToken = urlObj.searchParams.get('ᚨᚷ');
-
-    let finalURL = viewerSrc;
-    if (alienToken) {
-      const decoded = decodeFinal(alienToken);
-      // Reconstruir URL apuntando a LOAD con el query completo decodificado
-      finalURL = `https://load.3dtwins.tech/?${decoded.split('?')[1] || ''}`;
-    } else {
-      // Si no hay token alien, simplemente pasar viewer → load
-      finalURL = viewerSrc.replace(/^https?:\/\/viewer\.3dtwins\.tech/, "https://load.3dtwins.tech");
-    }
-
-    // Asignar al iframe
-    this.iframe.src = finalURL;
   }
 }
+
+// Registrar el WebComponent
+customElements.define("d3-twins-viewer", D3TwinsViewer);
+
 
 // Registrar el WebComponent
 customElements.define("d3-twins-viewer", D3TwinsViewer);
