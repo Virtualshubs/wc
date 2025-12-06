@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>3D Twins Embed Viewer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: black;
+    }
+    d3-twins-viewer {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Cargar WebComponent -->
+  <script type="module" src="https://viewer.3dtwins.tech/embeb2.html"></script>
+
+  <script>
+    // ➤ Tomar la URL EXACTA que llega al iframe
+    const rawUrl = window.location.href;
+
+    // ➤ Crear WebComponent y pasarle la URL tal cual
+    const viewerEl = document.createElement("d3-twins-viewer");
+    viewerEl.setAttribute("src", rawUrl);
+
+    document.body.appendChild(viewerEl);
+  </script>
+
+</body>
+</html>
