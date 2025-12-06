@@ -42,7 +42,7 @@
   <script>
     function getSceneToken() {
       try {
-        return window.location.href.split("?")[1] || "";
+        return window.location.href.split("ᚨᚷ=")[1] || "";
       } catch(e) {
         console.error("Error leyendo token:", e);
         return "";
@@ -57,7 +57,7 @@
       const decodedToken = decodeURIComponent(sceneToken);
 
       // 🔹 SE DEFINE UNA SOLA VEZ
-      const viewerSrc = `https://viewer.3dtwins.tech/embeb2.html?${decodedToken}`;
+      const viewerSrc = `https://viewer.3dtwins.tech/embeb2.html?ᚨᚷ=${decodedToken}`;
 
       // 🔹 Crear el elemento
       const viewerEl = document.createElement("d3-twins-viewer");
