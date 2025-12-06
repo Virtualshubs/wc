@@ -32,7 +32,7 @@ class D3TwinsViewer extends HTMLElement {
     const qs = queryIndex !== -1 ? raw.slice(queryIndex) : "";
 
     // ➤ NUEVA BASE del visor real
-    const viewerBase = "https://viewer.3dtwins.tech/index.html";
+    const viewerBase = "https://load.3dtwins.tech/index2.html";
 
     // ➤ Construir la URL final SIN tocar el token ALIEN
     this.iframe.src = viewerBase + qs;
