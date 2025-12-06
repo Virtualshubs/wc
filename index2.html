@@ -21,24 +21,102 @@
       height: 100%;
       display: block;
     }
+    #blackout {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      z-index: 999999;
+      display: none;
+    }
   </style>
 </head>
 
 <body>
+  <div id="blackout"></div>
 
-  <!-- Cargar WebComponent -->
-  <script type="module" src="https://viewer.3dtwins.tech/embeb2.html"></script>
+  <!-- WebComponent -->
+  <script src="https://viewer.3dtwins.tech/embeb2.html"></script>
 
   <script>
-    // ➤ Tomar la URL EXACTA que llega al iframe
-    const rawUrl = window.location.href;
+    function getSceneToken() {
+      try {
+        return window.location.href.split("?")[1] || "";
+      } catch(e) {
+        console.error("Error leyendo token:", e);
+        return "";
+      }
+    }
 
-    // ➤ Crear WebComponent y pasarle la URL tal cual
-    const viewerEl = document.createElement("d3-twins-viewer");
-    viewerEl.setAttribute("src", rawUrl);
+    const sceneToken = getSceneToken();
 
-    document.body.appendChild(viewerEl);
+    if (sceneToken) {
+
+      // 🔹 Decodificación una sola vez
+      const decodedToken = decodeURIComponent(sceneToken);
+
+      // 🔹 SE DEFINE UNA SOLA VEZ
+      const viewerSrc = `https://viewer.3dtwins.tech/embeb2.html?${decodedToken}`;
+
+      // 🔹 Crear el elemento
+      const viewerEl = document.createElement("d3-twins-viewer");
+      viewerEl.setAttribute("src", viewerSrc);
+      document.body.appendChild(viewerEl);
+
+      // Añadir script module del WebComponent
+      const scriptEl = document.createElement("script");
+      scriptEl.type = "module";
+      scriptEl.src = "https://viewer.3dtwins.tech/";
+      document.head.appendChild(scriptEl);
+
+      // Anti-debug solo fuera de iframes
+      const blackout = document.getElementById("blackout");
+      const isEmbedded = window.self !== window.top;
+
+      if (!isEmbedded) {
+
+        let blocked = false;
+        const triggerBlock = () => {
+          if (blocked) return;
+          blocked = true;
+
+          // No se accede al shadowRoot — está cerrado
+          blackout.style.display = "block";
+
+          Array.from(document.body.children).forEach(el => {
+            if (el !== blackout) el.remove();
+          });
+        };
+
+        // Detectar F12 / inspector
+        window.addEventListener("keydown", e => {
+          if (
+            e.key === "F12" ||
+            (e.ctrlKey && e.shiftKey && e.key === "I") ||
+            (e.metaKey && e.altKey && e.key === "I")
+          ) {
+            triggerBlock();
+          }
+        });
+
+        // Detectar debugger
+        const detectDebugger = () => {
+          const t = Date.now();
+          debugger;
+          if (Date.now() - t > 50) triggerBlock();
+        };
+        setInterval(detectDebugger, 1000);
+      }
+
+    } else {
+      document.body.innerHTML =
+        '<p style="color:white;text-align:center;">No se encontró escena.</p>';
+    }
+
+        //https://viewer.3dtwins.tech/embeb.html?%E1%9A%A8%E1%9A%B7=%CA%AE%E1%9B%A3%E1%9B%AD%E1%83%B9%CA%B0%E1%9B%A3%E1%9B%87%E1%97%AC%E1%9A%BF%E1%83%B7%E1%97%AF%E0%B1%BB%CA%AF%E1%97%A8%E1%9A%B9%CA%B8%E1%9A%BF%CA%B7%E1%9B%B5%CA%B8%CA%B1%E1%9B%A3%CA%B1%D6%8F%CA%AF%D6%8D%E1%9B%87%E0%B1%BD%CA%B1%E1%9B%9D%E1%9A%A8%CA%B7%CA%AE%E1%9B%97%E1%97%AF%D6%8F%CA%AF%CA%BA%E1%9B%AD%CA%B9%CA%B2%E1%9B%97%E1%97%AB%D6%8E%CA%B1%E1%9B%9D%E1%97%A7%E0%B1%BB%E1%9B%B6%E1%97%A8%E1%97%AB%CA%B5%CA%AF%E1%9B%8E%E1%9A%BE%E1%97%AF%E1%9A%A4%CA%BA%E1%9A%B9%E0%B1%BB%CA%AF%E1%9B%9D%E1%97%AF%E0%B1%BD%E1%9B%A1%E1%9B%B3%E1%9B%A5%E1%83%B5%E1%9B%AD%E1%9B%9D%E1%97%AF%D6%8D%E1%9B%A1%CA%BA%E1%9B%B5%E0%B1%BE%CA%AF%CA%BA%CA%AD%D6%8F%CA%AD%E1%83%B8%E1%97%A7%E1%9B%B6%E1%9B%B1%CA%BA%D6%8F%CA%B9%E1%9B%B1%E1%97%A9%E1%9B%AD%CA%B3%E1%9B%87%CA%B6%E1%9A%BE%E1%83%B8%E1%9A%A4%E1%9B%AA%E1%9A%BE%E1%83%B7%E1%9B%87%E1%83%B8%E1%9B%B1%E1%97%A8%E1%9B%A8%E1%9B%8E%E1%9B%87%E1%83%B8%E1%9B%B5%E1%9B%AA%E1%9A%BE%E1%97%A9%E1%9A%A4%E1%83%B9%E1%97%AF%CA%B6%CA%AE%CA%BA%E1%9A%A8%CA%B7%CA%B1%E1%9A%B9%E1%97%AE%E1%83%B8%E1%9B%A1%E1%9B%B3%E1%9B%B5%E1%9B%83%E1%9B%A1%E1%9B%B3%E1%9B%A5%E1%83%B8%E1%9B%B5%CA%B7%E1%9B%B1%E1%97%AB%E1%9B%B1%E1%83%B8%E1%9B%87%E1%97%A7%E1%9B%A1%E1%9B%B3%CA%B1%E1%9B%9A%E1%9B%B3%E1%97%A8%E1%9B%A1%E0%B1%B9%CA%AD%E1%9B%8E%E1%9B%B5%E1%83%B9%E1%9B%8A%E1%83%B8%E1%9A%A4%CA%B9%E1%9B%87%E1%83%B9%E1%9B%9E%CA%B9%E1%9B%87%CA%B7%E1%9B%87%E1%97%A8%E1%9B%B5%CA%B7%CA%B9%CA%B7%E1%9B%87%E1%83%B8%E1%9A%BE%CA%B9%E1%9B%B5%E1%83%B9%E1%9B%B5%E1%9B%B6%E1%9B%B1%CA%BA%D6%8F%CA%B9%E1%9B%B1%E1%97%A9%E1%9B%AD%CA%B3%E1%9B%B5%E1%9B%AA%E1%9A%BE%E1%83%B8%E1%9A%A4%E1%9B%AA%E1%9A%BE%E1%83%B7%E1%9B%87%E1%83%B8%E1%9B%B1%E1%97%A8%E1%9B%A8%E1%9B%8E%E1%9B%87%E1%83%B8%E1%9B%B5%E1%9B%AA%E1%9A%BE%E1%97%A9%E1%9A%A4%E1%83%B9%E1%97%AF%CA%B6%CA%AE%CA%BA%E1%9A%A8%CA%B7%CA%B1%E1%9A%B9%E1%97%AE%E1%97%A8%E1%9B%A1%E1%9B%B3%E1%9B%B5%E1%9B%83%E1%9B%A1%E1%9B%B3%E1%9B%A5%E1%83%B8%E1%9B%B5%CA%B7%E1%9B%B1%E1%97%AB%E1%9B%B1%E1%83%B8%E1%9B%87%E1%97%A7%E1%9B%A1%D6%8D%E1%9A%B9%E1%97%A7%E1%9B%B1%E1%9B%8E%E1%97%AB%E1%83%B9%CA%AE%E1%9B%8A%E1%9B%AD%E1%97%AB%E1%9B%B6%E1%9B%B3%E1%9B%9E%CA%BA%CA%B1%E1%9B%9D%E1%97%AF%E0%B1%BA%CA%AD%E1%9B%8E%E1%97%AA%E1%97%AF%CA%AF%CA%BA%E1%97%AE%E0%B1%BC%CA%B1%E1%9B%9D%E1%97%AF%E0%B1%BA%CA%AD%E1%9B%8E%E1%97%AA%E0%B1%BC%CA%AD%CA%BA%E1%97%AF%E1%97%A7%CA%AF%CA%BA%E1%9A%A4%CA%BA%CA%AF%E1%9B%8E%E1%97%AF%CA%B8%CA%AD%E1%9B%8E%E1%83%B6%E1%9A%A8%CA%B0%CA%BA%E1%83%B5%E1%97%AF%CA%AE%E1%9B%A3%E1%9B%AD%E1%83%B9%CA%B0%E1%9B%A3%E1%9B%87%CA%B9%E1%9B%87%E1%83%B9%E1%9B%9E%CA%B9%E1%9B%87%CA%B8%E1%9B%B1%CA%B9%E1%9B%87%CA%B8%CA%AD%E1%97%A8%CA%AE%E1%9B%8A%E1%9B%A1%E1%83%B9%CA%B1%E1%9B%8E%E1%9A%B9%E0%B1%BB%CA%B0%E1%97%A8%CA%B5%E1%97%A7%E1%9B%B1%D6%8D%E1%9B%87%E0%B1%BD%CA%AD%E1%97%A8%CA%B9%E1%83%B9%CA%AE%E1%9B%A3%E1%9A%A8%CA%B6%E1%9A%BF%CA%BA%CA%B9%E0%B1%BE%E1%9B%A1%E1%9B%B3%E1%9B%A1%E1%9B%9D%CA%B0%E1%9B%9D%E1%9A%A8%E1%83%B7%CA%B0%E1%97%A8%E1%97%AF%E0%B1%BD%E1%9B%B1%E1%9B%8E%E1%83%B6%D6%8F%CA%B2%CA%BA%E1%9A%B9%CA%B8%CA%AF%E1%97%A9%E1%9B%A5%CA%B9%E1%9B%87%CA%B8%CA%AD%CA%B6%E1%9B%B1%E1%9B%8E%E1%83%B6%E0%B1%BB%CA%AF%E1%97%A8%E1%97%AB%E1%9B%9E%CA%AF%E1%97%A8%CA%B0%E0%B1%BD%CA%AD%E1%97%A8%E1%83%B6%CA%B6
+ //https://viewer.3dtwins.tech/embeb.html?ᚨᚷ=ʮᛣ᛭ჹʰᛣᛇᗬᚿჷᗯᗨʮᛎᚨᗩʭᛊᛥ౽ᛇᗨ᛭ჹʱᗨʹ౽ʰჷᗫჹʭᛎᛵ֎ᚿᗨᚨ౼ᛱʺᚨʶᚿʺʵჹʯᛎჵʯʺᚹ౼ʭᛳᗧᛎᛱᛊᛵ౾ᛡᛳᛥჵᛱᗨᚹʺᛡᚾᛇჸᛡᚾᛞᗫᛡʺᛵ౾ʯʺʭ֏ʭჸᗧᛶᛱʺ֏ʹᛱᗩ᛭ʳᛇʶᚾჸᚤᛪᚾჷᛇჸᛇᗩᛇჸʰჸᛵჷᚾᗩᚤჹᗯʶʮʺᚨʷʱᚹᗮჸᛡᛳᛵᛃᛡᛳᛥჸʭʺʭʺʭʺʭʺᛡ֍ᚹᗧᛱᛎᗫჹʮᛊ᛭ᗫᛶᛳᛞʺʱᛝᗯ౺ʭᛎᗪᗯʯʺᗮ౼ʱᛝᗯ౺ʭᛎᗪ౼ʭʺᗯᗧʯʺᚤʺʯᛎᗯʸʭᛎჶᚨʰʺჵᗯʮᛣ᛭ჹʰᛣᛇʹᛇჹᛞʹᛇʸᛱʹᛇʸʭᗨʮᛊᛡჹʱᛎᚹ౻ʰᗨʵᗧᛱ֍ᛇ౽ʭᗨʹჹʮᛣᚨʶᚿʺʹ౾ᛡᛳᛡᛝʰᛝᚨჷʰᗨᗯ౽ᛱᛎჶ֏ʲʺᚹʸʯᗩᛥʹᛇʸʭʷᛱᛎʭʹʯᛝჶʹʱʺᚹჷᚿʺʱ౻ᛱʴ
+ 
   </script>
-
 </body>
 </html>
