@@ -19,7 +19,7 @@ class D3TwinsViewer extends HTMLElement {
     }
 
     // Transformar viewer -> load para que cargue el visor real
-    const loadURL = viewerSrc.replace(/^https?:\/\/viewer\.3dtwins\.tech/, "https://load.3dtwins.tech/index2.html");
+    const loadURL = viewerSrc.replace(/^https?:\/\/viewer\.3dtwins\.tech/, "https://load.3dtwins.tech/index.html");
 
     // Asignar al iframe directamente
     this.iframe.src = loadURL;
