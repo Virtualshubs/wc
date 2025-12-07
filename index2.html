@@ -1,122 +1,41 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>3D Twins Embed Viewer</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+class D3TwinsViewer extends HTMLElement {
+  constructor() {
+    super();
+    // Shadow DOM cerrado para encapsular el iframe
+    const shadow = this.attachShadow({ mode: "closed" });
 
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: black;
-    }
-    d3-twins-viewer {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-    #blackout {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      background: #000;
-      z-index: 999999;
-      display: none;
-    }
-  </style>
-</head>
+    // Crear el iframe
+    this.iframe = document.createElement("iframe");
+    this.iframe.setAttribute("frameborder", "0");
+    this.iframe.style = "width:100%;height:100%;border:0;";
+    shadow.appendChild(this.iframe);
+  }
 
-<body>
-  <div id="blackout"></div>
-
-  <!-- WebComponent -->
-  <script src="https://viewer.3dtwins.tech/embeb2.html"></script>
-
-  <script>
-    function getSceneToken() {
-      try {
-        return window.location.href.split("ᚨᚷ=")[1] || "";
-      } catch(e) {
-        console.error("Error leyendo token:", e);
-        return "";
-      }
+  connectedCallback() {
+    const viewerSrc = this.getAttribute("src"); // URL que apunta a viewer.3dtwins.tech
+    if (!viewerSrc) {
+      console.error("No se proporcionó src al d3-twins-viewer");
+      return;
     }
 
-    const sceneToken = getSceneToken();
+    // Transformar viewer -> load, manteniendo parámetros intactos
+    const loadURL = viewerSrc.replace(
+      /^https?:\/\/viewer\.3dtwins\.tech/,
+      "https://load.3dtwins.tech/index2.html"
+    );
 
-    if (sceneToken) {
+    // ⚠️ Detectar si la URL contiene caracteres fuera del ASCII estándar
+    const hasUnicode = /[^\x20-\x7E]/.test(loadURL);
 
-      // 🔹 Decodificación una sola vez
-      const decodedToken = decodeURIComponent(sceneToken);
-
-      // 🔹 SE DEFINE UNA SOLA VEZ
-      const viewerSrc = `https://viewer.3dtwins.tech/embeb2.html?ᚨᚷ=${decodedToken}`;
-
-      // 🔹 Crear el elemento
-      const viewerEl = document.createElement("d3-twins-viewer");
-      viewerEl.setAttribute("src", viewerSrc);
-      document.body.appendChild(viewerEl);
-
-      // Añadir script module del WebComponent
-      const scriptEl = document.createElement("script");
-      scriptEl.type = "module";
-      scriptEl.src = "https://viewer.3dtwins.tech/";
-      document.head.appendChild(scriptEl);
-
-      // Anti-debug solo fuera de iframes
-      const blackout = document.getElementById("blackout");
-      const isEmbedded = window.self !== window.top;
-
-      if (!isEmbedded) {
-
-        let blocked = false;
-        const triggerBlock = () => {
-          if (blocked) return;
-          blocked = true;
-
-          // No se accede al shadowRoot — está cerrado
-          blackout.style.display = "block";
-
-          Array.from(document.body.children).forEach(el => {
-            if (el !== blackout) el.remove();
-          });
-        };
-
-        // Detectar F12 / inspector
-        window.addEventListener("keydown", e => {
-          if (
-            e.key === "F12" ||
-            (e.ctrlKey && e.shiftKey && e.key === "I") ||
-            (e.metaKey && e.altKey && e.key === "I")
-          ) {
-            triggerBlock();
-          }
-        });
-
-        // Detectar debugger
-        const detectDebugger = () => {
-          const t = Date.now();
-          debugger;
-          if (Date.now() - t > 50) triggerBlock();
-        };
-        setInterval(detectDebugger, 1000);
-      }
-
+    if (hasUnicode) {
+      // Usar srcdoc para preservar Unicode exactamente como está
+      this.iframe.srcdoc = `<script>window.location.href="${loadURL}";</script>`;
     } else {
-      document.body.innerHTML =
-        '<p style="color:white;text-align:center;">No se encontró escena.</p>';
+      // Si solo hay ASCII, asignar directamente
+      this.iframe.src = loadURL;
     }
+  }
+}
 
-        //https://viewer.3dtwins.tech/embeb.html?%E1%9A%A8%E1%9A%B7=%CA%AE%E1%9B%A3%E1%9B%AD%E1%83%B9%CA%B0%E1%9B%A3%E1%9B%87%E1%97%AC%E1%9A%BF%E1%83%B7%E1%97%AF%E0%B1%BB%CA%AF%E1%97%A8%E1%9A%B9%CA%B8%E1%9A%BF%CA%B7%E1%9B%B5%CA%B8%CA%B1%E1%9B%A3%CA%B1%D6%8F%CA%AF%D6%8D%E1%9B%87%E0%B1%BD%CA%B1%E1%9B%9D%E1%9A%A8%CA%B7%CA%AE%E1%9B%97%E1%97%AF%D6%8F%CA%AF%CA%BA%E1%9B%AD%CA%B9%CA%B2%E1%9B%97%E1%97%AB%D6%8E%CA%B1%E1%9B%9D%E1%97%A7%E0%B1%BB%E1%9B%B6%E1%97%A8%E1%97%AB%CA%B5%CA%AF%E1%9B%8E%E1%9A%BE%E1%97%AF%E1%9A%A4%CA%BA%E1%9A%B9%E0%B1%BB%CA%AF%E1%9B%9D%E1%97%AF%E0%B1%BD%E1%9B%A1%E1%9B%B3%E1%9B%A5%E1%83%B5%E1%9B%AD%E1%9B%9D%E1%97%AF%D6%8D%E1%9B%A1%CA%BA%E1%9B%B5%E0%B1%BE%CA%AF%CA%BA%CA%AD%D6%8F%CA%AD%E1%83%B8%E1%97%A7%E1%9B%B6%E1%9B%B1%CA%BA%D6%8F%CA%B9%E1%9B%B1%E1%97%A9%E1%9B%AD%CA%B3%E1%9B%87%CA%B6%E1%9A%BE%E1%83%B8%E1%9A%A4%E1%9B%AA%E1%9A%BE%E1%83%B7%E1%9B%87%E1%83%B8%E1%9B%B1%E1%97%A8%E1%9B%A8%E1%9B%8E%E1%9B%87%E1%83%B8%E1%9B%B5%E1%9B%AA%E1%9A%BE%E1%97%A9%E1%9A%A4%E1%83%B9%E1%97%AF%CA%B6%CA%AE%CA%BA%E1%9A%A8%CA%B7%CA%B1%E1%9A%B9%E1%97%AE%E1%83%B8%E1%9B%A1%E1%9B%B3%E1%9B%B5%E1%9B%83%E1%9B%A1%E1%9B%B3%E1%9B%A5%E1%83%B8%E1%9B%B5%CA%B7%E1%9B%B1%E1%97%AB%E1%9B%B1%E1%83%B8%E1%9B%87%E1%97%A7%E1%9B%A1%E1%9B%B3%CA%B1%E1%9B%9A%E1%9B%B3%E1%97%A8%E1%9B%A1%E0%B1%B9%CA%AD%E1%9B%8E%E1%9B%B5%E1%83%B9%E1%9B%8A%E1%83%B8%E1%9A%A4%CA%B9%E1%9B%87%E1%83%B9%E1%9B%9E%CA%B9%E1%9B%87%CA%B7%E1%9B%87%E1%97%A8%E1%9B%B5%CA%B7%CA%B9%CA%B7%E1%9B%87%E1%83%B8%E1%9A%BE%CA%B9%E1%9B%B5%E1%83%B9%E1%9B%B5%E1%9B%B6%E1%9B%B1%CA%BA%D6%8F%CA%B9%E1%9B%B1%E1%97%A9%E1%9B%AD%CA%B3%E1%9B%B5%E1%9B%AA%E1%9A%BE%E1%83%B8%E1%9A%A4%E1%9B%AA%E1%9A%BE%E1%83%B7%E1%9B%87%E1%83%B8%E1%9B%B1%E1%97%A8%E1%9B%A8%E1%9B%8E%E1%9B%87%E1%83%B8%E1%9B%B5%E1%9B%AA%E1%9A%BE%E1%97%A9%E1%9A%A4%E1%83%B9%E1%97%AF%CA%B6%CA%AE%CA%BA%E1%9A%A8%CA%B7%CA%B1%E1%9A%B9%E1%97%AE%E1%97%A8%E1%9B%A1%E1%9B%B3%E1%9B%B5%E1%9B%83%E1%9B%A1%E1%9B%B3%E1%9B%A5%E1%83%B8%E1%9B%B5%CA%B7%E1%9B%B1%E1%97%AB%E1%9B%B1%E1%83%B8%E1%9B%87%E1%97%A7%E1%9B%A1%D6%8D%E1%9A%B9%E1%97%A7%E1%9B%B1%E1%9B%8E%E1%97%AB%E1%83%B9%CA%AE%E1%9B%8A%E1%9B%AD%E1%97%AB%E1%9B%B6%E1%9B%B3%E1%9B%9E%CA%BA%CA%B1%E1%9B%9D%E1%97%AF%E0%B1%BA%CA%AD%E1%9B%8E%E1%97%AA%E1%97%AF%CA%AF%CA%BA%E1%97%AE%E0%B1%BC%CA%B1%E1%9B%9D%E1%97%AF%E0%B1%BA%CA%AD%E1%9B%8E%E1%97%AA%E0%B1%BC%CA%AD%CA%BA%E1%97%AF%E1%97%A7%CA%AF%CA%BA%E1%9A%A4%CA%BA%CA%AF%E1%9B%8E%E1%97%AF%CA%B8%CA%AD%E1%9B%8E%E1%83%B6%E1%9A%A8%CA%B0%CA%BA%E1%83%B5%E1%97%AF%CA%AE%E1%9B%A3%E1%9B%AD%E1%83%B9%CA%B0%E1%9B%A3%E1%9B%87%CA%B9%E1%9B%87%E1%83%B9%E1%9B%9E%CA%B9%E1%9B%87%CA%B8%E1%9B%B1%CA%B9%E1%9B%87%CA%B8%CA%AD%E1%97%A8%CA%AE%E1%9B%8A%E1%9B%A1%E1%83%B9%CA%B1%E1%9B%8E%E1%9A%B9%E0%B1%BB%CA%B0%E1%97%A8%CA%B5%E1%97%A7%E1%9B%B1%D6%8D%E1%9B%87%E0%B1%BD%CA%AD%E1%97%A8%CA%B9%E1%83%B9%CA%AE%E1%9B%A3%E1%9A%A8%CA%B6%E1%9A%BF%CA%BA%CA%B9%E0%B1%BE%E1%9B%A1%E1%9B%B3%E1%9B%A1%E1%9B%9D%CA%B0%E1%9B%9D%E1%9A%A8%E1%83%B7%CA%B0%E1%97%A8%E1%97%AF%E0%B1%BD%E1%9B%B1%E1%9B%8E%E1%83%B6%D6%8F%CA%B2%CA%BA%E1%9A%B9%CA%B8%CA%AF%E1%97%A9%E1%9B%A5%CA%B9%E1%9B%87%CA%B8%CA%AD%CA%B6%E1%9B%B1%E1%9B%8E%E1%83%B6%E0%B1%BB%CA%AF%E1%97%A8%E1%97%AB%E1%9B%9E%CA%AF%E1%97%A8%CA%B0%E0%B1%BD%CA%AD%E1%97%A8%E1%83%B6%CA%B6
- //https://viewer.3dtwins.tech/embeb.html?ᚨᚷ=ʮᛣ᛭ჹʰᛣᛇᗬᚿჷᗯᗨʮᛎᚨᗩʭᛊᛥ౽ᛇᗨ᛭ჹʱᗨʹ౽ʰჷᗫჹʭᛎᛵ֎ᚿᗨᚨ౼ᛱʺᚨʶᚿʺʵჹʯᛎჵʯʺᚹ౼ʭᛳᗧᛎᛱᛊᛵ౾ᛡᛳᛥჵᛱᗨᚹʺᛡᚾᛇჸᛡᚾᛞᗫᛡʺᛵ౾ʯʺʭ֏ʭჸᗧᛶᛱʺ֏ʹᛱᗩ᛭ʳᛇʶᚾჸᚤᛪᚾჷᛇჸᛇᗩᛇჸʰჸᛵჷᚾᗩᚤჹᗯʶʮʺᚨʷʱᚹᗮჸᛡᛳᛵᛃᛡᛳᛥჸʭʺʭʺʭʺʭʺᛡ֍ᚹᗧᛱᛎᗫჹʮᛊ᛭ᗫᛶᛳᛞʺʱᛝᗯ౺ʭᛎᗪᗯʯʺᗮ౼ʱᛝᗯ౺ʭᛎᗪ౼ʭʺᗯᗧʯʺᚤʺʯᛎᗯʸʭᛎჶᚨʰʺჵᗯʮᛣ᛭ჹʰᛣᛇʹᛇჹᛞʹᛇʸᛱʹᛇʸʭᗨʮᛊᛡჹʱᛎᚹ౻ʰᗨʵᗧᛱ֍ᛇ౽ʭᗨʹჹʮᛣᚨʶᚿʺʹ౾ᛡᛳᛡᛝʰᛝᚨჷʰᗨᗯ౽ᛱᛎჶ֏ʲʺᚹʸʯᗩᛥʹᛇʸʭʷᛱᛎʭʹʯᛝჶʹʱʺᚹჷᚿʺʱ౻ᛱʴ
- 
-  </script>
-</body>
-</html>
+// Registrar el WebComponent
+customElements.define("d3-twins-viewer", D3TwinsViewer);
