@@ -34,7 +34,7 @@
   <div id="blackout"></div>
 
   <!-- Script del WebComponent -->
-  <script src="https://viewer.3dtwins.tech/index.html"></script>
+  <script src="https://viewer.3dtwins.tech/index2.html"></script>
 
   <script>
     function getSceneToken() {
@@ -52,7 +52,7 @@
 
     if(sceneToken) {
       // ⚠️ Pasar el token tal cual, incluyendo la query completa
-      const viewerSrc = `https://viewer.3dtwins.tech/?${sceneToken}`;
+      const viewerSrc = `https://viewer.3dtwins.tech/index2.html?${sceneToken}`;
 
       const viewerEl = document.createElement('d3-twins-viewer');
       viewerEl.setAttribute('src', viewerSrc);
